@@ -21,7 +21,6 @@ public class PostDto {
         public String accountId;
         public String profileImage;
 
-
         private LocalDateTime createdDt;
 
         private LocalDateTime modifiedDt;

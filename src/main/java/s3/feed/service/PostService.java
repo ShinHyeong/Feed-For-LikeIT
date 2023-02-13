@@ -104,29 +104,21 @@ public class PostService {
     }
 
     public ResponseEntity deletePost(Long postId, String accountId) {
-        UserEntity userEntity = userRepository.findByAccountId(accountId);
         PostEntity postEntity = postRepository.findById(postId).get();
         String postWriter = postEntity.getAccountId();
         Long postLevel = postRepository.getPostLevel(postId);
-        log.info("postId {} 's level is {}", postId, postLevel);
         Long lastPostId = postRepository.getLastPost(accountId).getId(); //최신 Post id
-        log.info("accountId {} 's lastPostId is {}", accountId, lastPostId);
         Long postDepth = postRepository.getPostDepth(lastPostId); //depth (올린 Post 수)
-        log.info("postDepth is {}", postDepth);
         Long prePostId= Long.valueOf(0); Long nextPostId= Long.valueOf(0);
 
         if(postDepth>1){ /* 등록된 Post가 2개 이상일 때, prePostId, nextPostId */
             if (postLevel == 1) {
                 prePostId = postRepository.getPrePost(postId).getId(); //최신 Post를 삭제하는 경우
-                log.info("postId {} 's prePostId is {}", postId, prePostId);
             }else if(postLevel>1 && postLevel<postDepth) { // 중간 날짜의 Post를 삭제하는 경우
                 prePostId = postRepository.getPrePost(postId).getId();
-                log.info("postId {} 's prePostId is {}", postId, prePostId);
                 nextPostId = postRepository.getNextPost(postId).getId();
-                log.info("postId {} 's nextPostId is {}", postId, nextPostId);
             }else { //가장 오래된 Post를 삭제하는 경우
                 nextPostId = postRepository.getNextPost(postId).getId();
-                log.info("postId {} 's nextPostId is {}", postId, nextPostId);
             }
         }
 
@@ -143,15 +135,12 @@ public class PostService {
         //최신 Post를 삭제하는 경우 - 다시 UPLOADED_LAST 관계로 연결시켜야 함
         if(postDepth>1) {
             if (postLevel == 1) {
-                log.info("Delete Recent Post");
                 postRepository.setUploadLast(accountId, prePostId);
                 // 중간 날짜의 Post를 삭제하는 경우 - 다시 PREVIOUS 관계로 연결시켜야함
             } else if (postLevel > 1 && postLevel < postDepth) {
-                log.info("Delete Medium Post");
                 postRepository.setPrevious(prePostId, nextPostId);
-            } else {
-                log.info("Delete Final Post");
-            }//가장 오래된 Post를 삭제하는 경우 - 아무것도 하지 않음
+            } else {//가장 오래된 Post를 삭제하는 경우 - 아무것도 하지 않음
+            }
         }
     }
         else {

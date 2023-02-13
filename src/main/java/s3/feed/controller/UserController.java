@@ -34,7 +34,7 @@ public class UserController {
     @Operation(summary = "마이페이지 조회", description = "마이페이지 조회 api")
     @GetMapping("/mypage/{accountId}")
     public UserDto.ResMypage getMypage(@PathVariable("accountId")String accountId){
-    return userService.getMypage(accountId);
+        return userService.getMypage(accountId);
     }
     @Operation(summary = "프로필사진 등록", description = "프로필 사진 등록 api")
     @PostMapping("/profileImage/{accountId}")
