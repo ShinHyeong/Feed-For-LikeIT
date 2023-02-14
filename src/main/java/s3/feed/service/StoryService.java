@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import s3.feed.dto.StoryDto;
+import s3.feed.entity.PostEntity;
 import s3.feed.entity.StoryEntity;
 import s3.feed.entity.UserEntity;
 import s3.feed.exception.ForbiddenException;
@@ -54,8 +55,16 @@ public class StoryService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
         }
 
-        userEntity.getStoryList().add(storyEntity);
-        userRepository.save(userEntity);
+        if(userEntity.getStoryList().size()==0){
+            userEntity.getStoryList().add(storyEntity);
+            userRepository.save(userEntity);
+        }else{ //이미 등록된 스토리가 있을경우 PREVIOUS 관계 추가
+            StoryEntity preStory = storyRepository.getLastStory(userEntity.getAccountId());
+            userEntity.getStoryList().add(storyEntity);
+            userRepository.save(userEntity);
+            storyRepository.uploadMoreStory(preStory.getId(), storyEntity.getId());
+        }
+
         System.out.println("시작");
         Thread.sleep(5000);
         System.out.println("끝");
@@ -91,11 +100,38 @@ public class StoryService {
 
         StoryEntity storyEntity = storyRepository.findById(storyId).get();
         String storyWriter = storyEntity.getAccountId();
+        Long storyLevel = storyRepository.getStoryLevel(storyId);
+        Long lastStoryId = storyRepository.getLastStory(accountId).getId(); //최신 Story id
+        Long storyDepth = storyRepository.getStoryDepth(lastStoryId); //depth (올린 Story 수)
+        Long preStoryId= Long.valueOf(0); Long nextStoryId= Long.valueOf(0);
+
+        if(storyDepth>1){ /* 등록된 Story가 2개 이상일 때, preStoryId, nextStoryId */
+            if (storyLevel == 1) {
+                preStoryId = storyRepository.getPreStory(storyId).getId(); //최신 Story를 삭제하는 경우
+            }else if(storyLevel>1 && storyLevel<storyDepth) { // 중간 날짜의 Story를 삭제하는 경우
+                preStoryId = storyRepository.getPreStory(storyId).getId();
+                nextStoryId = storyRepository.getNextStory(storyId).getId();
+            }else { //가장 오래된 Story를 삭제하는 경우
+                nextStoryId = storyRepository.getNextStory(storyId).getId();
+            }
+        }
 
         if (storyWriter.equals(accountId)) {
             storyRepository.deleteById(storyEntity.getId());
             amazonS3.deleteObject(new DeleteObjectRequest(bucket, storyEntity.getImage()));
 
+            /* 등록된 Story가 2개 이상일 때, 삭제한 후 Story간 관계 처리 */
+            //최신 Story를 삭제하는 경우 - 다시 UPLOADED_LAST 관계로 연결시켜야 함
+            if(storyDepth>1) {
+                if (storyLevel == 1) {
+                    storyRepository.setUploadLast(accountId, preStoryId);
+                    // 중간 날짜의 Story를 삭제하는 경우 - 다시 PREVIOUS 관계로 연결시켜야함
+                } else if (storyLevel > 1 && storyLevel < storyDepth) {
+                    storyRepository.setPrevious(preStoryId, nextStoryId);
+                } else {//가장 오래된 Story를 삭제하는 경우 - 아무것도 하지 않음
+                }
+
+            }
         } else {
             throw new ForbiddenException("권한이 없습니다.");
         }

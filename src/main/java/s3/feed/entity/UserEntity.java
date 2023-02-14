@@ -30,7 +30,7 @@ public class UserEntity {
     @Relationship(type = "UPLOADED_LAST")
     private List<PostEntity> posts = new ArrayList<>();
 
-    @Relationship(type = "UPLOADS")
+    @Relationship(type = "UPLOADED_LAST")
     private List<StoryEntity> storyList = new ArrayList<>();
 
     @Relationship(type = "WRITES", direction = Relationship.Direction.OUTGOING)
