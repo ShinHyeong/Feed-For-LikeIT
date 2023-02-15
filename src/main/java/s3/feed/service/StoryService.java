@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import s3.feed.dto.StoryDto;
+import s3.feed.entity.PostEntity;
 import s3.feed.entity.StoryEntity;
 import s3.feed.entity.UserEntity;
 import s3.feed.exception.ForbiddenException;
@@ -101,6 +102,23 @@ public class StoryService {
             throw new ForbiddenException("권한이 없습니다.");
         }
         return ResponseEntity.ok("스토리 삭제 성공~");
+    }
+
+    public ResponseEntity likeStory(Long storyId, String accountId) {
+        if(!storyRepository.isLike(accountId, storyId)) {
+            StoryEntity storyEntity = storyRepository.findById(storyId).get();
+            UserEntity userWhoLikeThis = userRepository.findByAccountId(accountId);
+            storyEntity.getUsersWhoLikeThis().add(userWhoLikeThis);
+            storyRepository.save(storyEntity);
+            return ResponseEntity.ok("스토리 좋아요 성공");
+        }else {throw new RuntimeException("already like");}
+    }
+
+    public ResponseEntity deleteLikeStory(Long storyId, String accountId) {
+        if(storyRepository.isLike(accountId, storyId)) {
+            storyRepository.deleteLike(accountId, storyId);
+            return ResponseEntity.ok("스토리 좋아요 취소 성공");
+        } else {throw new RuntimeException("already like");}
     }
 }
 

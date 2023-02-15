@@ -9,7 +9,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface StoryRepository extends Neo4jRepository<StoryEntity, Long> {
+    @Query("MATCH (s:Story) WHERE id(s)=$storyId " +
+            "MATCH (:Account{ accountId:$accountId })-[r:LIKES]->(s) " +
+            "DELETE r")
+    void deleteLike(String accountId, Long storyId);
 
+    //좋아요 여부 확인
+    @Query("MATCH (p:Story) WHERE id(p)=$storyId " +
+            "MATCH (a:Account{ accountId:$accountId }) " +
+            "RETURN EXISTS((a)-[:LIKES]->(p))")
+    boolean isLike(String accountId, Long storyId);
 //    /*프론트 test 용*/
 //    //무한 스크롤을 위한 인터페이스 : 팔로우한 사람들의 스토리 리스트 반환
 //    @Query("MATCH (s:Story)<-[:UPLOADED]-(a:Account {accountId:$accountId})-[:IS_FOLLOWING]->(f:Account)-[:UPLOADED]->(fs:Story)\n" +

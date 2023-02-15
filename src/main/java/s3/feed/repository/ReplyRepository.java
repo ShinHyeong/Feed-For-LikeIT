@@ -12,4 +12,15 @@ public interface ReplyRepository extends Neo4jRepository<ReplyEntity, Long> {
             "CREATE (a)-[:WRITES]->(r) ")
     void write(String accountId, Long id);
 
+    //좋아요 취소
+    @Query("MATCH (reply:Reply) WHERE id(reply)=$replyId " +
+            "MATCH (:Account{ accountId:$accountId })-[r:LIKES]->(reply) " +
+            "DELETE r")
+    void deleteLike(String accountId, Long replyId);
+
+    //좋아요 여부 확인
+    @Query("MATCH (r:Reply) WHERE id(r)=$replyId " +
+            "MATCH (a:Account{ accountId:$accountId }) " +
+            "RETURN EXISTS((a)-[:LIKES]->(r))")
+    boolean isLike(String accountId, Long replyId);
 }

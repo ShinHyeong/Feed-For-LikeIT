@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-//@Setter
+@Setter
 @Node(labels = {"Post"})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PostEntity {
@@ -37,6 +37,9 @@ public class PostEntity {
 
     @Relationship(type = "COMMENTED", direction = Relationship.Direction.INCOMING)
     private List<CommentEntity> commentEntityList = new ArrayList<>();
+
+    @Relationship(type = "LIKES", direction = Relationship.Direction.INCOMING)
+    private List<UserEntity> usersWhoLikeThis = new ArrayList<>();
 
     @JsonBackReference
     private UserEntity userEntity;

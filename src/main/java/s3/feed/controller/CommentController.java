@@ -39,5 +39,24 @@ public class CommentController {
         return new ResponseEntity<>(commentService.deleteReply(accountId, replyId), HttpStatus.OK);
     }
 
+    @PostMapping("/{accountId}/commentLike/{commentId}")
+    public ResponseEntity likeComment(@PathVariable("commentId") Long commentId, @PathVariable("accountId") String accountId) {
+        return new ResponseEntity<>(commentService.likeComment(commentId, accountId),HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{accountId}/commentLike/{commentId}")
+    public ResponseEntity deleteLikeComment(@PathVariable("commentId") Long commentId, @PathVariable("accountId") String accountId) {
+        return new ResponseEntity<>(commentService.deleteLikeComment(commentId, accountId),HttpStatus.OK);
+    }
+
+    @PostMapping("/{accountId}/replyLike/{replyId}")
+    public ResponseEntity likeReply(@PathVariable("replyId") Long replyId, @PathVariable("accountId") String accountId) {
+        return new ResponseEntity<>(commentService.likeReply(replyId, accountId),HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{accountId}/replyLike/{replyId}")
+    public ResponseEntity deleteLikeReply(@PathVariable("replyId") Long replyId, @PathVariable("accountId") String accountId) {
+        return new ResponseEntity<>(commentService.deleteLikeReply(replyId, accountId),HttpStatus.OK);
+    }
 }
 

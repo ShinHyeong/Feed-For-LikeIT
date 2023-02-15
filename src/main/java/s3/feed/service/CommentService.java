@@ -70,4 +70,43 @@ public class CommentService {
         return ResponseEntity.ok("대댓글 삭제 성공");
     }
 
+    public ResponseEntity likeComment(Long commentId, String accountId) {
+        if(!commentRepository.isLike(accountId, commentId)) {
+            CommentEntity commentEntity = commentRepository.findById(commentId).get();
+            UserEntity userWhoLikeThis = userRepository.findByAccountId(accountId);
+            commentEntity.setLikeCount(commentEntity.getLikeCount() + 1);
+            commentEntity.getUsersWhoLikeThis().add(userWhoLikeThis);
+            commentRepository.save(commentEntity);
+            return ResponseEntity.ok("댓글 좋아요 성공");
+        }else {throw new RuntimeException("already like");}
+    }
+
+    public ResponseEntity deleteLikeComment(Long commentId, String accountId) {
+        if(commentRepository.isLike(accountId, commentId)) {
+            CommentEntity commentEntity = commentRepository.findById(commentId).get();
+            commentRepository.deleteLike(accountId, commentId);
+            commentEntity.setLikeCount(commentEntity.getLikeCount() - 1);
+            return ResponseEntity.ok("댓글 좋아요 취소 성공");
+        }else {throw new RuntimeException("already delete like");}
+    }
+
+    public ResponseEntity likeReply(Long replyId, String accountId) {
+        if(!replyRepository.isLike(accountId, replyId)) {
+            ReplyEntity replyEntity = replyRepository.findById(replyId).get();
+            UserEntity userWhoLikeThis = userRepository.findByAccountId(accountId);
+            replyEntity.setLikeCount(replyEntity.getLikeCount() + 1);
+            replyEntity.getUsersWhoLikeThis().add(userWhoLikeThis);
+            replyRepository.save(replyEntity);
+            return ResponseEntity.ok("대댓글 좋아요 성공");
+        } else {throw new RuntimeException("already like");}
+    }
+
+    public ResponseEntity deleteLikeReply(Long replyId, String accountId) {
+        if(replyRepository.isLike(accountId, replyId)) {
+            ReplyEntity replyEntity = replyRepository.findById(replyId).get();
+            replyRepository.deleteLike(accountId, replyId);
+            replyEntity.setLikeCount(replyEntity.getLikeCount() - 1);
+            return ResponseEntity.ok("대댓글 좋아요 취소 성공");
+        } else {throw new RuntimeException("already delete like");}
+    }
 }

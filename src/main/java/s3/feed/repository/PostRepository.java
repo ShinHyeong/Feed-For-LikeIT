@@ -34,6 +34,17 @@ public interface PostRepository extends Neo4jRepository<PostEntity, Long> {
             "ORDER BY posts.createdDt DESC")
     List<PostEntity> getPostList(String accountId);
 
+    //좋아요 취소
+    @Query("MATCH (p:Post) WHERE id(p)=$postId " +
+            "MATCH (:Account{ accountId:$accountId })-[r:LIKES]->(p) " +
+            "DELETE r")
+    void deleteLike(String accountId, Long postId);
+
+    //좋아요 여부 확인
+    @Query("MATCH (p:Post) WHERE id(p)=$postId " +
+            "MATCH (a:Account{ accountId:$accountId }) " +
+            "RETURN EXISTS((a)-[:LIKES]->(p))")
+    boolean isLike(String accountId, Long postId);
 //    // 자신을 포함한 팔로우한 사람들의 게시물 리스트 중 마지막에 위치한 게시물(가장 오래된) 반환
 //    @Query("MATCH (a:Account {accountId:$accountId})-[:UPLOADED_LAST]->(np:Post)\n" +
 //            "MATCH (np)-[:PREVIOUS]->(pnp:Post)\n" +

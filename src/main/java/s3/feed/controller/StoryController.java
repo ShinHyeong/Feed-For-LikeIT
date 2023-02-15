@@ -35,6 +35,16 @@ public class StoryController {
 
         return new ResponseEntity<>(storyService.deleteStory(id, accountId), HttpStatus.OK);
     }
+
+    @PostMapping("/{accountId}/storyLike/{storyId}")
+    public ResponseEntity likePost(@PathVariable("storyId") Long storyId, @PathVariable("accountId") String accountId) {
+        return new ResponseEntity<>(storyService.likeStory(storyId, accountId),HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{accountId}/storyLike/{storyId}")
+    public ResponseEntity deleteLikePost(@PathVariable("storyId") Long storyId, @PathVariable("accountId") String accountId) {
+        return new ResponseEntity<>(storyService.deleteLikeStory(storyId, accountId),HttpStatus.OK);
+    }
 }
 
 //    @DeleteMapping("/file")
