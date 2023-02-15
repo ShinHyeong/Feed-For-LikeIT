@@ -25,6 +25,7 @@ public class StoryEntity {
 
     private LocalDateTime createdDt;
 
+
     @JsonBackReference
     private UserEntity userEntity;
 

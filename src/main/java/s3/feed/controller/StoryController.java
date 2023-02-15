@@ -19,9 +19,9 @@ public class StoryController {
 
 
     @Operation(summary = "스토리 조회", description = "한명의 유저가 생성한 모든 스토리 조회 api")
-    @GetMapping("/story/{accountId}/{image}")
-    public StoryDto.ResStoryListDto getStory(@PathVariable("accountId")String accountId, @PathVariable("image")String image){
-        return  storyService.getStory(accountId, image);
+    @GetMapping("/story/{accountId}")
+    public StoryDto.ResStoryListDto getStory(@PathVariable("accountId")String accountId){
+        return  storyService.getStory(accountId);
     }
     @Operation(summary = "스토리 생성", description = "스토리 생성 api")
     @PostMapping("/{accountId}/story")

@@ -17,16 +17,28 @@ public class FeedController {
     FeedService feedService;
 
     @GetMapping("/{accountId}/postList")
-    public ResponseEntity getFeed(@PathVariable("accountId") String accountId,
+    public ResponseEntity getPaginatedPostList(@PathVariable("accountId") String accountId,
                                   @RequestParam long lastSeenPostId,
                                   @RequestParam int pageSize){
-        return new ResponseEntity<>(feedService.searchBySlice(accountId, lastSeenPostId, pageSize), HttpStatus.OK);
+        return new ResponseEntity<>(feedService.searchPostBySlice(accountId, lastSeenPostId, pageSize), HttpStatus.OK);
+    }
+
+    @GetMapping("/{accountId}/storyList")
+    public ResponseEntity getPaginatedStoryList(@PathVariable("accountId") String accountId,
+                                  @RequestParam String lastSeenFollowingId,
+                                  @RequestParam int pageSize){
+        return new ResponseEntity<>(feedService.searchFollowingsWhoUploadedStoryBySlice(accountId, lastSeenFollowingId, pageSize), HttpStatus.OK);
     }
 
     /*프론트 test 용 api*/
     //paginated 되지 않는 상태의 게시물 목록을 가져온다
     @GetMapping("/test/{accountId}/postList")
-    public ResponseEntity getFeedTest(@PathVariable("accountId") String accountId){
-        return new ResponseEntity<>(feedService.mainPageTest(accountId), HttpStatus.OK);
+    public ResponseEntity getPostList(@PathVariable("accountId") String accountId){
+        return new ResponseEntity<>(feedService.getPostList(accountId), HttpStatus.OK);
+    }
+    //paginated 되지 않는 상태 : 스토리를 올린 팔로우들의 프로필 리스트 반환(스토리 조회용)
+    @GetMapping("/test/{accountId}/storyList")
+    public ResponseEntity getFollowingsWhoUploadedStory(@PathVariable("accountId") String accountId){
+        return new ResponseEntity<>(feedService.getFollowingsWhoUploadedStory(accountId), HttpStatus.OK);
     }
 }

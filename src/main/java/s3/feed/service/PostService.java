@@ -68,15 +68,9 @@ public class PostService {
             isMultyImage = true;
         post.addPost(post.getMediaEntityList(), userEntity.getAccountId(), userEntity.getProfileImage(), LocalDateTime.now(), null, 0, 0, isMultyImage);
 
-        if(userEntity.getPosts().size()==0){
-            userEntity.getPosts().add(post);
+           userEntity.getPosts().add(post);
             userRepository.save(userEntity);
-        }else{ //이미 등록된 게시물이 있을경우 PREVIOUS 관계 추가
-            PostEntity prePost = postRepository.getLastPost(userEntity.getAccountId());
-            userEntity.getPosts().add(post);
-            userRepository.save(userEntity);
-            postRepository.uploadMorePost(prePost.getId(), post.getId());
-        }
+
         return ResponseEntity.ok("게시물 등록");
     }
 
@@ -106,22 +100,6 @@ public class PostService {
     public ResponseEntity deletePost(Long postId, String accountId) {
         PostEntity postEntity = postRepository.findById(postId).get();
         String postWriter = postEntity.getAccountId();
-        Long postLevel = postRepository.getPostLevel(postId);
-        Long lastPostId = postRepository.getLastPost(accountId).getId(); //최신 Post id
-        Long postDepth = postRepository.getPostDepth(lastPostId); //depth (올린 Post 수)
-        Long prePostId= Long.valueOf(0); Long nextPostId= Long.valueOf(0);
-
-        if(postDepth>1){ /* 등록된 Post가 2개 이상일 때, prePostId, nextPostId */
-            if (postLevel == 1) {
-                prePostId = postRepository.getPrePost(postId).getId(); //최신 Post를 삭제하는 경우
-            }else if(postLevel>1 && postLevel<postDepth) { // 중간 날짜의 Post를 삭제하는 경우
-                prePostId = postRepository.getPrePost(postId).getId();
-                nextPostId = postRepository.getNextPost(postId).getId();
-            }else { //가장 오래된 Post를 삭제하는 경우
-                nextPostId = postRepository.getNextPost(postId).getId();
-            }
-        }
-
 
         if (postWriter.equals(accountId)) {
             List<MediaEntity> mediaEntityList = postEntity.getMediaEntityList();
@@ -130,19 +108,7 @@ public class PostService {
                 mediaRepository.deleteById(media.getId());
                 amazonS3.deleteObject(new DeleteObjectRequest(bucket, media.getImage()));
             }
-
-        /* 등록된 Post가 2개 이상일 때, 삭제한 후 Post간 관계 처리 */
-        //최신 Post를 삭제하는 경우 - 다시 UPLOADED_LAST 관계로 연결시켜야 함
-        if(postDepth>1) {
-            if (postLevel == 1) {
-                postRepository.setUploadLast(accountId, prePostId);
-                // 중간 날짜의 Post를 삭제하는 경우 - 다시 PREVIOUS 관계로 연결시켜야함
-            } else if (postLevel > 1 && postLevel < postDepth) {
-                postRepository.setPrevious(prePostId, nextPostId);
-            } else {//가장 오래된 Post를 삭제하는 경우 - 아무것도 하지 않음
-            }
         }
-    }
         else {
             throw new ForbiddenException("권한이 없습니다.");
         }

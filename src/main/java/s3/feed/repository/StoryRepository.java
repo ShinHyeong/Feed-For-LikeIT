@@ -3,8 +3,45 @@ package s3.feed.repository;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 import s3.feed.entity.StoryEntity;
+import s3.feed.entity.UserEntity;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 public interface StoryRepository extends Neo4jRepository<StoryEntity, Long> {
+
+//    /*프론트 test 용*/
+//    //무한 스크롤을 위한 인터페이스 : 팔로우한 사람들의 스토리 리스트 반환
+//    @Query("MATCH (s:Story)<-[:UPLOADED]-(a:Account {accountId:$accountId})-[:IS_FOLLOWING]->(f:Account)-[:UPLOADED]->(fs:Story)\n" +
+//            "unwind [s, fs] as stories\n" +
+//            "WITH stories\n" +
+//            "WHERE datetime({ year: toInteger(substring(toString(stories.createdDt), 0, 4)),\n" +
+//            "                 month: toInteger(substring(toString(stories.createdDt), 5, 2)),\n" +
+//            "                  day: toInteger(substring(toString(stories.createdDt), 8, 2)), \n" +
+//            "                  hour: toInteger(substring(toString(stories.createdDt), 11, 2)),\n" +
+//            "                  minute: toInteger(substring(toString(stories.createdDt), 14, 2)),\n" +
+//            "                  second: toInteger(substring(toString(stories.createdDt), 17, 2)) }) \n" +
+//            "                  < datetime({ year: $year, month: $month, day: $day, hour: $hour, minute: $minute, second: $second })\n" +
+//            "RETURN DISTINCT stories\n" +
+//            "ORDER BY stories.createdDt DESC ")
+//    List<StoryEntity> getUnseenStoryList(String accountId, int year, int month, int day, int hour, int minute, int second);
+//
+//
+//    //팔로우한 사람들의 스토리 리스트 반환
+//    @Query("MATCH (s:Story)<-[:UPLOADED]-(a:Account {accountId:$accountId})-[:IS_FOLLOWING]->(f:Account)-[:UPLOADED]->(fs:Story)\n" +
+//            "unwind [s,fs] as stories\n" +
+//            "RETURN DISTINCT stories\n" +
+//            "ORDER BY stories.createdDt DESC")
+//    List<StoryEntity> getAllStoryList(String accountId);
+
+       /*
+    //한 사람이 올린 스토리 목록
+    @Query( "MATCH (a:Account {accountId:\"bbb\"})-[:UPLOADED_LAST]->(s:Story)\n" +
+            "MATCH (s)-[:PREVIOUS*]->(ps:Story)\n" +
+            "UNWIND [s, ps] AS stories\n" +
+            "RETURN stories ")
+    List<StoryEntity> getStoryList(String accountId);
+
     @Query("MATCH (:Account{ accountId:$accountId })-[r:UPLOADED_LAST]->(last:Story)" +
             "RETURN last")
     StoryEntity getLastStory(String accountId);
@@ -46,5 +83,5 @@ public interface StoryRepository extends Neo4jRepository<StoryEntity, Long> {
             "WITH size((last)-[:PREVIOUS*]->()) as depth " +
             "RETURN depth+1 ")
     Long getStoryDepth(Long lastStoryId);
-
+ */
 }

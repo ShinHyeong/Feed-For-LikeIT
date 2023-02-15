@@ -19,6 +19,7 @@ import s3.feed.entity.PostEntity;
 import s3.feed.entity.UserEntity;
 import s3.feed.exception.ForbiddenException;
 import s3.feed.feign.FeignWithAuth;
+import s3.feed.repository.PostRepository;
 import s3.feed.repository.UserRepository;
 
 import java.io.IOException;
@@ -86,9 +87,8 @@ public class UserService {
 
     public UserDto.ResMypage getMypage(String accountId){
         UserEntity userEntity = userRepository.findByAccountId(accountId);
-        int postCount = userEntity.getPosts().size();
         List<PostEntity> posts = userEntity.getPosts();
-        UserDto.ResMypage resMypage = new UserDto.ResMypage();
+        int postCount = posts.size();
         List<UserDto.ReqMypagePostDto> mypagePostDtos = new ArrayList<>();
 
         for(PostEntity postEntity: posts){
@@ -97,15 +97,15 @@ public class UserService {
             mypagePostDtos.add(reqMypagePostDto);
         }
 
-        resMypage = UserDto.ResMypage.builder()
+        return UserDto.ResMypage.builder()
                 .accountId(accountId)
                 .accountName(userEntity.getAccountName())
                 .profileImage(userEntity.getProfileImage())
                 .postCount(postCount)
                 .mypagePostDtos(mypagePostDtos)
                 .build();
-        return resMypage;
     }
+
     public List<String> getSearchingUser(String keyword){
         List<UserEntity> byAccountIdContaining = userRepository.findByAccountIdContaining(keyword);
         List<String> accountIdList = new ArrayList<>();
